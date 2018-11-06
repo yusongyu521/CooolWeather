@@ -1,6 +1,7 @@
 package com.gooya.cooolweather.util;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.gooya.cooolweather.db.CooolWeatherDB;
 import com.gooya.cooolweather.model.City;

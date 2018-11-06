@@ -3,6 +3,7 @@ package com.gooya.cooolweather.activity;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -22,6 +23,8 @@ import com.gooya.cooolweather.util.Utility;
 
 import java.util.ArrayList;
 import java.util.List;
+
+
 
 public class ChooseAreaActivity extends Activity {
     public static final int LEVEL_PROVINCE=0;
@@ -55,10 +58,10 @@ public class ChooseAreaActivity extends Activity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(currentLevel==LEVEL_PROVINCE){
                     selectedProvince = provinceList.get(position);
-                    //queryCities();
+                    queryCities();
                 }else if(currentLevel==LEVEL_CITY){
                     selectedCity = cityList.get(position);
-                    //queryCounties();
+                    queryCounties();
                 }
             }
         });
@@ -76,13 +79,47 @@ public class ChooseAreaActivity extends Activity {
             titleText.setText("中国");
             currentLevel=LEVEL_PROVINCE;
         }else{
-            queryFromServer(null,"province");
+            queryFromServer("province");
         }
     }
-    private void queryFromServer(final String code,final String type){
+    private void queryCities(){
+        cityList = cooolWeatherDB.loadCities(selectedProvince.getId());
+        if(cityList.size()>0){
+            dataList.clear();
+            for(City city : cityList){
+                dataList.add(city.getCityName());
+            }
+            adapter.notifyDataSetChanged();
+            listView.setSelection(0);
+            titleText.setText(selectedProvince.getProvinceName());
+            currentLevel=LEVEL_CITY;
+        }else{
+            queryFromServer("city");
+        }
+    }
+    private void queryCounties(){
+        countyList = cooolWeatherDB.loadCounties(selectedCity.getId());
+        if(countyList.size()>0){
+            dataList.clear();
+            for(County county : countyList){
+                dataList.add(county.getCountyName());
+            }
+            adapter.notifyDataSetChanged();
+            listView.setSelection(0);
+            titleText.setText(selectedCity.getCityName());
+            currentLevel=LEVEL_COUNTY;
+        }else{
+            queryFromServer("county");
+        }
+    }
+    private void queryFromServer(final String type){
         String address="";
-        if(code==null){
+        if("province".equals(type)){
             address = "http://guolin.tech/api/china";
+        }else if("city".equals(type)){
+            address = "http://guolin.tech/api/china/"+selectedProvince.getProvinceCode();
+        }else if("county".equals(type)){
+            address = "http://guolin.tech/api/china/"+selectedProvince.getProvinceCode()+"/"+selectedCity.getCityCode();
         }
         showProgressDialog();
         HttpUtil.sendHttpHttpRequest(address, new HttpCallbackListener() {
@@ -91,6 +128,10 @@ public class ChooseAreaActivity extends Activity {
                 boolean result = false;
                 if("province".equals(type)){
                     result = Utility.handleProvincesResponse(cooolWeatherDB,response);
+                }else if("city".equals(type)){
+                    result = Utility.handleCitiesResponse(cooolWeatherDB,response,selectedProvince.getId());
+                }else if("county".equals(type)){
+                    result = Utility.handleCountiesResponse(cooolWeatherDB,response,selectedCity.getId());
                 }
                 if(result){
                     runOnUiThread(new Runnable() {
@@ -99,6 +140,10 @@ public class ChooseAreaActivity extends Activity {
                             closeProgressDialog();
                             if("province".equals(type)){
                                 queryProvinces();
+                            }else if("city".equals(type)){
+                                queryCities();
+                            }else if("county".equals(type)){
+                                queryCounties();
                             }
                         }
                     });
@@ -129,6 +174,17 @@ public class ChooseAreaActivity extends Activity {
     private void closeProgressDialog(){
         if(progressDialog!=null){
             progressDialog.dismiss();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(currentLevel==LEVEL_CITY){
+            queryProvinces();
+        }else if(currentLevel==LEVEL_COUNTY){
+            queryCities();
+        }else{
+            finish();
         }
     }
 }
