@@ -88,17 +88,19 @@ public class Utility {
         try {
             JSONObject jsonObject = new JSONObject(response);
             String cityName = jsonObject.getJSONArray("HeWeather5").getJSONObject(0).getJSONObject("basic").getString("city");
-            Log.d("yusongyu", cityName);
             String temp1 = jsonObject.getJSONArray("HeWeather5").getJSONObject(0).getJSONArray("daily_forecast").getJSONObject(0).getJSONObject("tmp").getString("max");
             String temp2 = jsonObject.getJSONArray("HeWeather5").getJSONObject(0).getJSONArray("daily_forecast").getJSONObject(0).getJSONObject("tmp").getString("min");
             String weatherDesp = jsonObject.getJSONArray("HeWeather5").getJSONObject(0).getJSONArray("daily_forecast").getJSONObject(0).getJSONObject("cond").getString("txt_d");
-            String publishTime = jsonObject.getJSONArray("HeWeather5").getJSONObject(0).getJSONObject("basic").getJSONObject("update").getString("loc");
-            saveWeatherInfo(context,cityName,temp1,temp2,weatherDesp,publishTime);
+            String publishTime1 = jsonObject.getJSONArray("HeWeather5").getJSONObject(0).getJSONObject("basic").getJSONObject("update").getString("loc");
+            String weatherId = jsonObject.getJSONArray("HeWeather5").getJSONObject(0).getJSONObject("basic").getString("id");
+            String[] strs = publishTime1.split(" ");
+            String publishTime = strs[1];
+            saveWeatherInfo(context,cityName,temp1,temp2,weatherDesp,publishTime,weatherId);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
-    public static void saveWeatherInfo(Context context,String cityName,String temp1,String temp2,String weatherDesp,String publishTime){
+    public static void saveWeatherInfo(Context context,String cityName,String temp1,String temp2,String weatherDesp,String publishTime,String weatherId){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy年M月d日", Locale.CHINA);
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
         editor.putBoolean("city_selected",true);
@@ -108,6 +110,7 @@ public class Utility {
         editor.putString("weather_desp",weatherDesp);
         editor.putString("publish_time",publishTime);
         editor.putString("current_date",sdf.format(new Date()));
+        editor.putString("weather_id",weatherId);
         editor.commit();
     }
 }

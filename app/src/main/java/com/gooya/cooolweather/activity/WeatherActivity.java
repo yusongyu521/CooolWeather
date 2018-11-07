@@ -1,6 +1,7 @@
 package com.gooya.cooolweather.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -40,6 +41,8 @@ public class WeatherActivity extends Activity implements View.OnClickListener{
         temp1Text = (TextView)findViewById(R.id.temp1);
         temp2Text = (TextView)findViewById(R.id.temp2);
         currentDateText = (TextView)findViewById(R.id.current_date);
+        switchCity = (Button)findViewById(R.id.switch_city);
+        refreshWeather = (Button)findViewById(R.id.refresh_weather);
         String weatherId = getIntent().getStringExtra("weather_id");
         if(!TextUtils.isEmpty(weatherId)){
             publishText.setText("同步中...");
@@ -49,11 +52,30 @@ public class WeatherActivity extends Activity implements View.OnClickListener{
         }else{
             showWeather();
         }
+        switchCity.setOnClickListener(this);
+        refreshWeather.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
-
+        switch (v.getId()){
+            case R.id.switch_city:
+                Intent intent = new Intent(this,ChooseAreaActivity.class);
+                intent.putExtra("from_weather_activity",true);
+                startActivity(intent);
+                finish();
+                break;
+            case R.id.refresh_weather:
+                publishText.setText("同步中...");
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+                String weatherId = prefs.getString("weather_id","");
+                if(!TextUtils.isEmpty(weatherId)){
+                    queryWeatherId(weatherId);
+                }
+                break;
+                default:
+                    break;
+        }
     }
     private void queryWeatherId(String weatherId){
         String address = "https://free-api.heweather.com/v5/weather?city="+weatherId+"&key=32d1c829ed7d483086f4f5b4d5947cef";
@@ -86,10 +108,10 @@ public class WeatherActivity extends Activity implements View.OnClickListener{
     private void showWeather(){
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         cityNameText.setText(prefs.getString("city_name",""));
-        temp1Text.setText(prefs.getString("temp1",""));
-        temp2Text.setText(prefs.getString("temp2",""));
+        temp1Text.setText(prefs.getString("temp1","")+"°C");
+        temp2Text.setText(prefs.getString("temp2","")+"°C");
         weatherDespText.setText(prefs.getString("weather_desp",""));
-        publishText.setText(prefs.getString("publish_time","")+"发布");
+        publishText.setText("今日"+prefs.getString("publish_time","")+"发布");
         currentDateText.setText(prefs.getString("current_date",""));
         weatherInfoLayout.setVisibility(View.VISIBLE);
         cityNameText.setVisibility(View.VISIBLE);
