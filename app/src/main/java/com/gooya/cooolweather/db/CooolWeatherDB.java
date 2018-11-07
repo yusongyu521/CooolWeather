@@ -82,6 +82,7 @@ public class CooolWeatherDB {
             values.put("county_name",county.getCountyName());
             values.put("county_code",county.getCountyCode());
             values.put("city_id",county.getCityId());
+            values.put("weather_id",county.getWeatherId());
             db.insert("County",null,values);
         }
     }
@@ -95,6 +96,7 @@ public class CooolWeatherDB {
                 county.setCountyName(cursor.getString(cursor.getColumnIndex("county_name")));
                 county.setCountyCode(cursor.getString(cursor.getColumnIndex("county_code")));
                 county.setCityId(cityId);
+                county.setWeatherId(cursor.getString(cursor.getColumnIndex("weather_id")));
                 list.add(county);
             }while(cursor.moveToNext());
         }
