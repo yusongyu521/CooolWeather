@@ -16,6 +16,8 @@
             </intent-filter>
         </activity>
         <activity android:name="com.gooya.cooolweather.activity.WeatherActivity"></activity>
+        <service android:name=".service.AutoUpdateService"></service>
+        <receiver android:name=".receiver.AutoUpdateReceiver"></receiver>
     </application>
 
 </manifest>
